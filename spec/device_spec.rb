@@ -83,6 +83,11 @@ describe LogStashLogger::Device do
       it { is_expected.to be_a LogStashLogger::Device::Kafka }
     end
 
+    context "when URI config is rabbitmq" do
+      let(:uri_config) { rabbitmq_uri_config }
+      it { is_expected.to be_a LogStashLogger::Device::Rabbitmq }
+    end
+
     context "when URI config is stdout" do
       let(:uri_config) { stdout_uri_config }
       it { is_expected.to be_a LogStashLogger::Device::Stdout }

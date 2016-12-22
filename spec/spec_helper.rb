@@ -61,6 +61,7 @@ RSpec.shared_context 'device' do
 
   let(:redis_device) { LogStashLogger::Device.new(type: :redis, sync: true) }
   let(:kafka_device) { LogStashLogger::Device.new(type: :kafka, sync: true) }
+  let(:rabbitmq_device) { LogStashLogger::Device.new(type: :rabbitmq, sync: true) }
 
   let(:outputs) { [{type: :stdout}, {type: :io, io: io}] }
   let(:multi_delegator_device) { LogStashLogger::Device.new(type: :multi_delegator, outputs: outputs) }
@@ -81,6 +82,7 @@ RSpec.shared_context 'device' do
   let(:file_uri) { "file://#{file.path}" }
   let(:redis_uri) { "redis://localhost:6379" }
   let(:kafka_uri) { "kafka://localhost:9092" }
+  let(:rabbitmq_uri) { "amqp://localhost:5672" }
   let(:stdout_uri) { "stdout://localhost" }
   let(:stderr_uri) { "stderr://localhost" }
 
@@ -91,6 +93,7 @@ RSpec.shared_context 'device' do
   let(:file_uri_config)    { {uri: file_uri} }
   let(:redis_uri_config)   { {uri: redis_uri} }
   let(:kafka_uri_config)   { {uri: kafka_uri} }
+  let(:rabbitmq_uri_config) { {uri: rabbitmq_uri} }
   let(:stdout_uri_config)  { {uri: stdout_uri} }
   let(:stderr_uri_config)  { {uri: stderr_uri} }
 end
