@@ -30,13 +30,14 @@ module LogStashLogger
 
       def write_batch(messages, group = nil)
         with_connection do
-          messages.inject(exchange) {|ex, msg| ex.send(:publish, msg, @publish_options) }
+          messages.each {|message| exchange.publish(message, @publish_options) }
         end
       end
 
       def write_one(message)
-        puts message
-        write_batch([message])
+        with_connection do
+          exchange.publish(message, @publish_options)
+        end
       end
 
       private
