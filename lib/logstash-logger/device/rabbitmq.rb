@@ -50,17 +50,17 @@ module LogStashLogger
                         queue.bind(ex)
                         ex
                       when :fanout
-                        channel.fanout(@exchange_name, exchange_options)
+                        ex = channel.fanout(@exchange_name, exchange_options)
                         queue.bind(ex)
                         ex
                       when :topic
                         @publish_options = { routing_key: @key }
-                        channel.topic(@exchange_name, exchange_options)
+                        ex = channel.topic(@exchange_name, exchange_options)
                         queue.bind(ex)
                         ex
                       else
                         @publish_options = { routing_key: @key }
-                        channel.default_exchange
+                        ex = channel.default_exchange
                         queue.bind(ex)
                         ex
                       end
