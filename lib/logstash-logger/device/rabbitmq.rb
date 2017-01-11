@@ -45,24 +45,16 @@ module LogStashLogger
       def exchange
         @exchange ||= case @exchange_type
                       when :direct
-                        @publish_options = { routing_key: @key }
-                        ex = channel.direct(@exchange_name, exchange_options)
-                        queue.bind(ex)
-                        ex
+                        @publish_options = { routing_key: @queue_name }
+                        channel.direct(@exchange_name, exchange_options)
                       when :fanout
-                        ex = channel.fanout(@exchange_name, exchange_options)
-                        queue.bind(ex)
-                        ex
+                        channel.fanout(@exchange_name, exchange_options)
                       when :topic
-                        @publish_options = { routing_key: @key }
-                        ex = channel.topic(@exchange_name, exchange_options)
-                        queue.bind(ex)
-                        ex
+                        @publish_options = { routing_key: @queue_name }
+                        channel.topic(@exchange_name, exchange_options)
                       else
-                        @publish_options = { routing_key: @key }
-                        ex = channel.default_exchange
-                        queue.bind(ex)
-                        ex
+                        @publish_options = { routing_key: @queue_name }
+                        channel.default_exchange
                       end
       end
 
@@ -80,7 +72,8 @@ module LogStashLogger
 
       def channel
         with_connection do
-          @channel ||= @io.create_channel
+          return @channel if @channel && @channel.open?
+          @channel = @io.create_channel
         end
       end
     end
