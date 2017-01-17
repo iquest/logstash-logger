@@ -9,8 +9,6 @@ module LogStashLogger
       DEFAULT_DURABLE = true
       DEFAULT_AUTO_DELETE = false
 
-      attr_accessor :key
-
       def initialize(opts)
         super
         @exchange_name = opts.delete(:exchange) || DEFAULT_EXCHANGE
@@ -19,13 +17,41 @@ module LogStashLogger
         @durable = opts.delete(:durable) || DEFAULT_DURABLE
         @auto_delete = opts.delete(:auto_delete) || DEFAULT_AUTO_DELETE
         @publish_options = {}
-        @buffer_group = nil # @exchange_name
+        @buffer_group = @routing_key
         @rabbitmq_options = opts
         @conn ||= ::Bunny.new(@rabbitmq_options)
       end
 
       def connect
-        @io = @conn.start
+        @pid = Process.pid
+        @conn.start
+        @io = @conn.create_channel
+        reset_buffer
+      end
+
+      def close!
+        reset_buffer
+        super
+        @pid = nil
+        @exchange = nil
+        @conn.close
+      end
+
+      def connected?
+        if @pid && (pid = Process.pid) != @pid
+          log_warning "Fork detected: parent pid #{@pid} != current pid #{pid}"
+          return false
+        end
+        super
+      end
+
+      def buffer_receive(*)
+        if flush_timer_thread && !flush_timer_thread.alive?
+          log_warning "Dead flush timer thread in process #{Process.pid}: restarting"
+          @flush_timer_thread = nil
+          reset_buffer
+        end
+        super
       end
 
       def write_batch(messages, group = nil)
@@ -66,10 +92,7 @@ module LogStashLogger
       end
 
       def channel
-        with_connection do
-          return @channel if @channel && @channel.open?
-          @channel = @io.create_channel
-        end
+        @io
       end
     end
   end
